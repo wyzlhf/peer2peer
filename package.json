@@ -1,0 +1,19 @@
+{
+  "name": "peer2peer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bufferutil": "^4.0.3",
+    "express": "^4.17.1",
+    "serve-favicon": "^2.5.0",
+    "socket.io": "^3.1.1",
+    "utf-8-validate": "^5.0.4"
+  }
+}

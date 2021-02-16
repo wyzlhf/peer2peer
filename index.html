@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PC2端对端视频通话示例</title>
+    <style>
+        #videos{
+            text-align:center
+        }
+        #buttons{
+            text-align:center
+        }
+        h1{
+            text-align:center
+        }
+        video{
+            width: 450px;
+            height: 450px;
+            border: 1px solid red;
+        }
+        button{
+            width: 88px;
+            height: 66px;
+        }
+    </style>
+</head>
+<body>
+<h1>PC2端对端音视频通话示例</h1>
+<div id="screen">
+    <div id="videos">
+        <video id="mineVideo" playsinline autoplay></video>
+        <video id="otherVideo" playsinline autoplay></video>
+    </div>
+    <div id="buttons">
+<!--        <button id="startButton">开始</button>-->
+        <button id="callButton">通话</button>
+        <button id="hangupButton">挂断</button>
+    </div>
+
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.js"></script>
+<script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+<script src="index.js"></script>
+</body>
+</html>
