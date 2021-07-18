@@ -12,22 +12,20 @@ var offerSocketID, answerSocketID
 var roomName = 'm2m'
 
 const iceServer = {
-    iceServers: [{
-        'urls': 'turn:8.133.169.171:3478',
-        'credential': '123456',
-        'username': 'test'
+    iceServers: [{urls: ["stun:ss-turn1.xirsys.com"]}, {
+        username: "CEqIDkX5f51sbm7-pXxJVXePoMk_WB7w2J5eu0Bd00YpiONHlLHrwSb7hRMDDrqGAAAAAF_OT9V0dWR1d2Vi",
+        credential: "446118be-38a4-11eb-9ece-0242ac140004",
+        urls: ["turn:ss-turn1.xirsys.com:80?transport=udp", "turn:ss-turn1.xirsys.com:3478?transport=udp"]
     }]
-};
+}
 
 //基础函数开始
 function start() {
     console.log('client-start')
-    var consraints = {video: true, audio: false}
+    var consraints = {video: true, audio: true}
     navigator.mediaDevices.getUserMedia(consraints).then(stream => {
         mineVideo.srcObject = stream
         localStream = stream
-        // console.log('client-localStream：')
-        // console.log(localStream)
     }).catch(err => {
         console.log(err.name)
     })
@@ -37,40 +35,42 @@ function start() {
 }
 
 function call() {
-    pcOffer=new RTCPeerConnection(iceServer)
-    console.log('client-pcOffer:'+pcOffer)
-    if (localStream){
+    pcOffer = new RTCPeerConnection(iceServer)
+    console.log('client-pcOffer:' + pcOffer)
+    console.log('call中打印一下localStream')
+    console.log(localStream)
+    if (localStream) {
         localStream.getTracks().forEach((track) => {
             pcOffer.addTrack(track, localStream);
         })
         console.log('重新打印一下localStream：')
         console.log(localStream)
-    }else {
+    } else {
         start()
     }
     // pcOffer.addStream(localStream)
     // console.log('打印一下localStream：')
     // console.log(localStream)
-    pcOffer.createOffer().then(offer=>{
+    pcOffer.createOffer().then(offer => {
         return pcOffer.setLocalDescription(offer)
-    }).then(()=>{
-        offerSocketID=socket.id
+    }).then(() => {
+        offerSocketID = socket.id
         console.log('client-打印一下description看看：')
         console.log(pcOffer.localDescription)
-        socket.emit('pcOffer',{
-            type:'video-offer',
-            description:pcOffer.localDescription,
+        socket.emit('pcOffer', {
+            type: 'video-offer',
+            description: pcOffer.localDescription,
             // to:answerSocketID,
-            sender:offerSocketID,
+            sender: offerSocketID,
         })
     })
-    pcOffer.ontrack=ev => {
+    pcOffer.ontrack = ev => {
         console.log('client-offer端，开始添加远端流')
-        let remoteStream=ev.streams[0]
-        otherVideo.srcObject=remoteStream
+        let remoteStream = ev.streams[0]
+        otherVideo.srcObject = remoteStream
     }
-    pcOffer.onicecandidate=({ candidate }) => {
-        console.log('onicecandidate:'+pcOffer)
+    pcOffer.onicecandidate = ({candidate}) => {
+        console.log('onicecandidate:' + pcOffer)
         socket.emit('offerICE', {
             candidate: candidate,
             // to: parterName,
@@ -86,46 +86,46 @@ function hangup() {
 // 基础函数结束
 
 // socket监控开始
-var socket=io().connect()
-socket.emit('new user',roomName)
+var socket = io().connect()
+socket.emit('new user', roomName)
 
 
-socket.on('pcOffer',data=>{
+socket.on('pcOffer', data => {
     //开始处理answer端业务
     // console.log('client-打印一下新的Stream')
     // console.log(localStream)
-    pcAnswer=new RTCPeerConnection(iceServer)
-    if (localStream){
+    var pcAnswer = new RTCPeerConnection(iceServer)
+    if (localStream) {
         localStream.getTracks().forEach((track) => {
             pcAnswer.addTrack(track, localStream);
         })
         console.log('重新打印一下answer端localStream：')
         console.log(localStream)
-    }else {
+    } else {
         start()
     }
     let desc = new RTCSessionDescription(data.description)
     console.log('client-打印一下desc看一下：')
     console.log(desc)
-    pcAnswer.setRemoteDescription(desc).then(()=>{
-        pcAnswer.createAnswer().then(answer=>{
+    pcAnswer.setRemoteDescription(desc).then(() => {
+        pcAnswer.createAnswer().then(answer => {
             return pcAnswer.setLocalDescription(answer)
-        }).then(()=>{
-            answerSocketID=socket.id
+        }).then(() => {
+            var answerSocketID = socket.id
             console.log('client-anwer端-生成PCAnswer，并开始发给服务端')
-            socket.emit('pcAnswer',{
+            socket.emit('pcAnswer', {
                 type: 'video-answer',
                 description: pcAnswer.localDescription,
                 sender: answerSocketID,//这边知道answerSocketID么？
             })
         })
     })
-    pcAnswer.ontrack=ev => {
+    pcAnswer.ontrack = ev => {
         console.log('client-answer端，开始添加远端流')
-        let remoteStream=ev.streams[0]
-        otherVideo.srcObject=remoteStream
+        let remoteStream = ev.streams[0]
+        otherVideo.srcObject = remoteStream
     }
-    pcAnswer.onicecandidate=({ candidate }) => {
+    pcAnswer.onicecandidate = ({candidate}) => {
         console.log('client-answer-onicecandidate开始发出')
         socket.emit('answerICE', {
             candidate: candidate,
@@ -135,12 +135,12 @@ socket.on('pcOffer',data=>{
     };
 })
 
-socket.on('pcAnswer',data=>{
+socket.on('pcAnswer', data => {
     let desc = new RTCSessionDescription(data.description);
     pcOffer.setRemoteDescription(desc);
 })
 
-socket.on('offerICE',data=>{
+socket.on('offerICE', data => {
     console.log('server-answer端收到offer端ice，并添加到本地')
     if (data.candidate) {
         var candidate = new RTCIceCandidate(data.candidate);
@@ -149,7 +149,7 @@ socket.on('offerICE',data=>{
     }
 })
 
-socket.on('answerICE',data=>{
+socket.on('answerICE', data => {
     console.log('server-offer端收到answer端ice，并添加到本地')
     if (data.candidate) {
         var candidate = new RTCIceCandidate(data.candidate);
@@ -162,5 +162,5 @@ socket.on('answerICE',data=>{
 
 $(function () {
     start()
-    callButton.onclick=call
+    callButton.onclick = call
 })
